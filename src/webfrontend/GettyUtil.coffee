@@ -82,3 +82,26 @@ class ez5.GettyUtil
     _fulltext.l10ntext = l10nObject
 
     return _fulltext
+
+  ########################################################################
+  # picks the best matching label from a JSKOS prefLabel/altLabel-map
+  # (e.g. {"en": "Germany", "de": "Deutschland"}) for the given language
+  ########################################################################
+  @getLocalizedLabel: (labelMap, language) ->
+    return '' unless labelMap
+
+    if language and labelMap[language]
+      return labelMap[language]
+
+    if language
+      shortenedLanguage = language.split('-')[0]
+      if labelMap[shortenedLanguage]
+        return labelMap[shortenedLanguage]
+
+    if labelMap['en']
+      return labelMap['en']
+
+    for key, value of labelMap
+      return value
+
+    return ''
