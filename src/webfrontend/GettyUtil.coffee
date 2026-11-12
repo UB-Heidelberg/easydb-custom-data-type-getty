@@ -10,8 +10,8 @@ class ez5.GettyUtil
       activeFrontendLanguage = context.getFrontendLanguage()
 
     if cdata?.frontendLanguage
-        if cdata?.frontendLanguage?.length == 2
-          activeFrontendLanguage = cdata.frontendLanguage
+      if cdata?.frontendLanguage?.length == 2
+        activeFrontendLanguage = cdata.frontendLanguage
 
     if Array.isArray(object)
       object = object[0]
@@ -27,7 +27,7 @@ class ez5.GettyUtil
     #  give l10n-languages the easydb-language-syntax
     for l10nObjectKey, l10nObjectValue of l10nObject
       # add to l10n
-      l10nObject[l10nObjectKey] = object._label
+      l10nObject[l10nObjectKey] = @getLocalizedLabel(object?.prefLabel, l10nObjectKey)
 
     _standard.l10ntext = l10nObject
 
@@ -57,15 +57,28 @@ class ez5.GettyUtil
     for language in shortenedDatabaseLanguages
       l10nObjectWithShortenedLanguages[language] = ''
 
-    # preflabel to all languages
-    fullTextString += object._label + ' '
-    # identifier to fulltext
-    fullTextString += object.id + ' '
+    # nothing to index without a concept
+    unless object
+      _fulltext.text = ''
+      _fulltext.l10ntext = l10nObject
+      return _fulltext
 
-    # parse all altlabels
-    if object.identified_by
-      for altInfo in object.identified_by
-        fullTextString += altInfo.content + ' '
+    # preflabel (all language-variants) to fulltext
+    if object.prefLabel
+      for labelLanguage, labelValue of object.prefLabel
+        fullTextString += labelValue + ' '
+
+    # identifier to fulltext
+    if object.uri
+      fullTextString += object.uri + ' '
+    if object.notation
+      fullTextString += object.notation.join(' ') + ' '
+
+    # altLabel (variant names), falls vom Dienst (noch) geliefert
+    if object.altLabel
+      for altLabelLanguage, altLabelValues of object.altLabel
+        if Array.isArray(altLabelValues)
+          fullTextString += altLabelValues.join(' ') + ' '
 
     for l10nObjectWithShortenedLanguagesKey, l10nObjectWithShortenedLanguagesValue of l10nObjectWithShortenedLanguages
       l10nObjectWithShortenedLanguages[l10nObjectWithShortenedLanguagesKey] = fullTextString
